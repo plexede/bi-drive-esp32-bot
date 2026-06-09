@@ -1,11 +1,13 @@
 #include <Arduino.h>
-#include <ArduinoBLE.h>
+#include <Bluepad32.h>
 
 // Pin Definitions
 const int leftPWM = 3;
 const int leftDir = 4;
 const int rightPWM = 5;
 const int rightDir = 6;
+
+ControllerPtr myController = nullptr;
 
 void stopMotors() {
     analogWrite(leftPWM, 0);
@@ -30,15 +32,34 @@ void drive(int left, int right) {
     analogWrite(rightPWM, abs(weightedRight));
 }
 
+void onConnectedController(ControllerPtr ctl) {
+    myController = ctl;
+}
+
+void onDisconnectedController(ControllerPtr ctl) {
+    myController = nullptr;
+    stopMotors();
+}
+
 void setup() {
     pinMode(leftPWM, OUTPUT); pinMode(leftDir, OUTPUT);
     pinMode(rightPWM, OUTPUT); pinMode(rightDir, OUTPUT);
     
-    if (!BLE.begin()) {
-        while (1);
-    }
+    BP32.setup(&onConnectedController, &onDisconnectedController);
 }
 
 void loop() {
-    BLE.poll();
+    BP32.update();
+
+    if (myController && myController->isConnected()) {
+        int y = myController->axisY();
+        int x = myController->axisRX();
+
+        if (abs(y) < 10) y = 0;
+        if (abs(x) < 10) x = 0;
+
+        drive(constrain(y + x, -255, 255), constrain(y - x, -255, 255));
+    } else {
+        stopMotors();
+    }
 }
