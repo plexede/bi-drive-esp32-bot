@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <PS4Controller.h>
+#include <Bluepad32.h>
 
 // Pin Definitions
 const int leftPWM = 3;
