@@ -1,11 +1,13 @@
 #include <Arduino.h>
-#include <ArduinoBLE.h>
+#include <Bluepad32.h>
 
 // Pin Definitions
 const int leftPWM = 3;
 const int leftDir = 4;
 const int rightPWM = 5;
 const int rightDir = 6;
+
+ControllerPtr myController = nullptr;
 
 void stopMotors() {
     analogWrite(leftPWM, 0);
@@ -19,18 +21,43 @@ void drive(int left, int right) {
     analogWrite(rightPWM, abs(right));
 }
 
+void onConnectedController(ControllerPtr ctl) {
+    myController = ctl;
+}
+
+void onDisconnectedController(ControllerPtr ctl) {
+    myController = nullptr;
+    stopMotors();
+}
+
 void setup() {
     pinMode(leftPWM, OUTPUT); pinMode(leftDir, OUTPUT);
     pinMode(rightPWM, OUTPUT); pinMode(rightDir, OUTPUT);
     
-    if (!BLE.begin()) {
-        while (1);
-    }
+    BP32.setup(&onConnectedController, &onDisconnectedController);
+}
+
+void processControllerInput() {
+    int y = myController->axisY(); // Forward/Backward
+    int x = myController->axisRX(); // Turn
+
+    // Apply deadzone
+    if (abs(y) < 10) y = 0;
+    if (abs(x) < 10) x = 0;
+
+    // Differential drive mixing
+    int leftSpeed = y + x;
+    int rightSpeed = y - x;
+
+    drive(constrain(leftSpeed, -255, 255), constrain(rightSpeed, -255, 255));
 }
 
 void loop() {
-    // Note: ArduinoBLE implementation for PS4 controller 
-    // requires specific HID profile handling.
-    // This is a placeholder for your BLE logic.
-    BLE.poll();
+    BP32.update();
+
+    if (myController && myController->isConnected()) {
+        processControllerInput();
+    } else {
+        stopMotors();
+    }
 }
