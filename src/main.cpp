@@ -12,11 +12,22 @@ void stopMotors() {
     analogWrite(rightPWM, 0);
 }
 
+// Weight system constants
+const float PRECISION_MODE = 0.3;
+const float NORMAL_MODE = 0.6;
+const float TURBO_MODE = 1.0;
+
+float speedMultiplier = NORMAL_MODE;
+
 void drive(int left, int right) {
-    digitalWrite(leftDir, left >= 0 ? HIGH : LOW);
-    digitalWrite(rightDir, right >= 0 ? HIGH : LOW);
-    analogWrite(leftPWM, abs(left));
-    analogWrite(rightPWM, abs(right));
+    // Apply normalized weight
+    int weightedLeft = (int)(left * speedMultiplier);
+    int weightedRight = (int)(right * speedMultiplier);
+
+    digitalWrite(leftDir, weightedLeft >= 0 ? HIGH : LOW);
+    digitalWrite(rightDir, weightedRight >= 0 ? HIGH : LOW);
+    analogWrite(leftPWM, abs(weightedLeft));
+    analogWrite(rightPWM, abs(weightedRight));
 }
 
 void setup() {
