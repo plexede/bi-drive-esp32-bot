@@ -37,22 +37,26 @@ void setup() {
     BP32.setup(&onConnectedController, &onDisconnectedController);
 }
 
+void processControllerInput() {
+    int y = myController->axisY(); // Forward/Backward
+    int x = myController->axisRX(); // Turn
+
+    // Apply deadzone
+    if (abs(y) < 10) y = 0;
+    if (abs(x) < 10) x = 0;
+
+    // Differential drive mixing
+    int leftSpeed = y + x;
+    int rightSpeed = y - x;
+
+    drive(constrain(leftSpeed, -255, 255), constrain(rightSpeed, -255, 255));
+}
+
 void loop() {
     BP32.update();
 
     if (myController && myController->isConnected()) {
-        int y = myController->axisY(); // Forward/Backward
-        int x = myController->axisRX(); // Turn
-
-        // Apply deadzone
-        if (abs(y) < 10) y = 0;
-        if (abs(x) < 10) x = 0;
-
-        // Differential drive mixing
-        int leftSpeed = y + x;
-        int rightSpeed = y - x;
-
-        drive(constrain(leftSpeed, -255, 255), constrain(rightSpeed, -255, 255));
+        processControllerInput();
     } else {
         stopMotors();
     }
