@@ -7,6 +7,8 @@ const int leftDir = 4;
 const int rightPWM = 5;
 const int rightDir = 6;
 
+ControllerPtr myController = nullptr;
+
 void stopMotors() {
     analogWrite(leftPWM, 0);
     analogWrite(rightPWM, 0);
@@ -19,18 +21,28 @@ void drive(int left, int right) {
     analogWrite(rightPWM, abs(right));
 }
 
+void onConnectedController(ControllerPtr ctl) {
+    myController = ctl;
+}
+
+void onDisconnectedController(ControllerPtr ctl) {
+    myController = nullptr;
+    stopMotors();
+}
+
 void setup() {
     pinMode(leftPWM, OUTPUT); pinMode(leftDir, OUTPUT);
     pinMode(rightPWM, OUTPUT); pinMode(rightDir, OUTPUT);
     
-    // Replace with your PS4 controller MAC address
-    PS4.begin("00:00:00:00:00:00"); 
+    BP32.setup(&onConnectedController, &onDisconnectedController);
 }
 
 void loop() {
-    if (PS4.isConnected()) {
-        int y = PS4.data.analog.stick.ly; // Forward/Backward
-        int x = PS4.data.analog.stick.rx; // Turn
+    BP32.update();
+
+    if (myController && myController->isConnected()) {
+        int y = myController->axisY(); // Forward/Backward
+        int x = myController->axisRX(); // Turn
 
         // Apply deadzone
         if (abs(y) < 10) y = 0;
