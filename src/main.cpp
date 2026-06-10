@@ -21,5 +21,7 @@ void setup()
 
 void loop()
 {
-    BLE.poll();
+    // LStick returns -127 to 128, while the drive function takes
+    drive(PS4::LStickX()*2, PS4::LStickY()*2);
+    
 }
