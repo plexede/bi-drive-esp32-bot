@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <inputs_interface.h>
 
-#include <motors.h>
+#include <motor.h>
 
 MOTOR leftMotor(3, 4);
 MOTOR rightMotor(5, 6);
@@ -25,7 +25,11 @@ void setup()
 
 void loop()
 {
+    // Check for new inputs
     PS4::poll();
+    // Status light
+    digitalWrite(LED_BUILTIN, PS4::PSButton());
+
     // Simple tank drive logic
     int y = PS4::LStickY() * 2;
     int x = PS4::LStickX() * 2;
