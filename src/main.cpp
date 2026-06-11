@@ -44,8 +44,9 @@ void loop()
         // Simple tank drive logic
         int y = inputs_interface::filterDeadzone(PS4.LStickY(), 4) * 2;
         int x = inputs_interface::filterDeadzone(PS4.LStickX(), 4) * 2;
+        int pivot = inputs_interface::filterDeadzone(PS4.RStickX(), 4) * 2;
 
-        leftMotor.setPower(y + x);
-        rightMotor.setPower(y - x);
+        leftMotor.setPower(y + x + pivot);
+        rightMotor.setPower(y - x + pivot);
     }
 }
