@@ -3,8 +3,8 @@
 
 #include <motor.h>
 
-MOTOR leftMotor(3, 4);
-MOTOR rightMotor(5, 6);
+MOTOR leftMotor(34, 35);
+MOTOR rightMotor(32, 33);
 
 void setup()
 {
