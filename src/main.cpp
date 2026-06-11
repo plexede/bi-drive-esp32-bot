@@ -38,11 +38,12 @@ void loop()
     // Check for new inputs
     if (inputs_interface::inputsReady)
     {
-        digitalWrite(2, PS4.PSButton());
+        inputs_interface::inputsReady = false;
+        digitalWrite(2, PS4.PSButton() ? HIGH : LOW);
 
         // Simple tank drive logic
-        int y = PS4.LStickY() * 2;
-        int x = PS4.LStickX() * 2;
+        int y = inputs_interface::filterDeadzone(PS4.LStickY(), 4) * 2;
+        int x = inputs_interface::filterDeadzone(PS4.LStickX(), 4) * 2;
 
         leftMotor.setPower(y + x);
         rightMotor.setPower(y - x);

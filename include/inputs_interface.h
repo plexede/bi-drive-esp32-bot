@@ -11,4 +11,5 @@ namespace inputs_interface
 {
     extern bool inputsReady;
     bool init();
+    int filterDeadzone(int _input, int _deadZone);
 }
