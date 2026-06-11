@@ -1,9 +1,13 @@
 #include "inputs_interface.h"
-#include "SerialTransfer.h"
+#include <PS4Controller.h>
+#include "esp_bt_main.h"
+#include "esp_bt_device.h"
+#include "esp_gap_bt_api.h"
+#include "esp_err.h"
 
-#define DEADZONE 0 // TODO: adjust this!
+#define DEADZONE 4 // TODO: adjust this!
 
-namespace PS4
+namespace PS42
 {
 
     // abstracted for ease of access
@@ -12,29 +16,29 @@ namespace PS4
     /*   B U T T O N S   */
     /*********************/
 
-    bool Cross() { return DATA::inputStruct.Cross; }
-    bool Circle() { return DATA::inputStruct.Circle; }
-    bool Square() { return DATA::inputStruct.Square; }
-    bool Triangle() { return DATA::inputStruct.Triangle; }
+    bool Cross() { return PS4.Cross(); }
+    bool Circle() { return PS4.Circle(); }
+    bool Square() { return PS4.Square(); }
+    bool Triangle() { return PS4.Triangle(); }
 
-    bool Up() { return DATA::inputStruct.Up; }
-    bool Down() { return DATA::inputStruct.Down; }
-    bool Left() { return DATA::inputStruct.Left; }
-    bool Right() { return DATA::inputStruct.Right; }
+    bool Up() { return PS4.Up(); }
+    bool Down() { return PS4.Down(); }
+    bool Left() { return PS4.Left(); }
+    bool Right() { return PS4.Right(); }
 
-    bool PSButton() { return DATA::inputStruct.PSButton; }
-    bool Touchpad() { return DATA::inputStruct.Touchpad; }
-    bool Share() { return DATA::inputStruct.Share; }
-    bool Options() { return DATA::inputStruct.Options; }
+    bool PSButton() { return PS4.PSButton(); }
+    bool Touchpad() { return PS4.Touchpad(); }
+    bool Share() { return PS4.Share(); }
+    bool Options() { return PS4.Options(); }
 
-    bool L1() { return DATA::inputStruct.L1; }
-    int8_t L2() { return DATA::inputStruct.L2; }
+    bool L1() { return PS4.L1(); }
+    int8_t L2() { return PS4.L2(); }
 
-    bool R1() { return DATA::inputStruct.R1; }
-    int8_t R2() { return DATA::inputStruct.R2; }
+    bool R1() { return PS4.R1(); }
+    int8_t R2() { return PS4.R2(); }
 
-    bool R3() { return DATA::inputStruct.R3; }
-    bool L3() { return DATA::inputStruct.L3; }
+    bool R3() { return PS4.R3(); }
+    bool L3() { return PS4.L3(); }
 
     /********************/
     /*    A N A L O G   */
@@ -42,70 +46,46 @@ namespace PS4
 
     int8_t LStickX()
     {
-        return DATA::filterDeadzone(DATA::inputStruct.LStickX, DEADZONE);
+        return DATA::filterDeadzone(PS4.LStickX(), DEADZONE);
     }
 
     int8_t LStickY()
     {
-        return DATA::filterDeadzone(DATA::inputStruct.LStickY, DEADZONE);
+        return DATA::filterDeadzone(PS4.LStickY(), DEADZONE);
     }
 
     int8_t RStickX()
     {
-        return DATA::filterDeadzone(DATA::inputStruct.RStickX, DEADZONE);
+        return DATA::filterDeadzone(PS4.RStickX(), DEADZONE);
     }
 
     int8_t RStickY()
     {
-        return DATA::filterDeadzone(DATA::inputStruct.RStickY, DEADZONE);
+        return DATA::filterDeadzone(PS4.RStickY(), DEADZONE);
     }
 
     /*******************************/
     /*   S T A T U S   F L A G S   */
     /*******************************/
 
-    uint8_t battery() { return DATA::inputStruct.battery; }
-    bool isCharging() { return DATA::inputStruct.charging; }
-    bool hasAudio() { return DATA::inputStruct.audio; }
-    bool hasMic() { return DATA::inputStruct.mic; }
+    uint8_t battery() { return PS4.battery(); }
+    bool isCharging() { return PS4.charging(); }
+    bool hasAudio() { return PS4.audio(); }
+    bool hasMic() { return PS4.mic(); }
 
     /********************/
     /*   S E N S O R S  */
     /********************/
 
-    int16_t gyro_x() { return DATA::inputStruct.gyro_x; }
-    int16_t gyro_y() { return DATA::inputStruct.gyro_y; }
-    int16_t gyro_z() { return DATA::inputStruct.gyro_z; }
-    int16_t accel_x() { return DATA::inputStruct.accel_x; }
-    int16_t accel_y() { return DATA::inputStruct.accel_y; }
-    int16_t accel_z() { return DATA::inputStruct.accel_z; }
-
-    bool poll()
-    {
-        // receive new data, and process if available
-        return DATA::receiveData();
-        // process/abstract new data
-    }
+    int16_t gyro_x() { return PS4.gyro_x(); }
+    int16_t gyro_y() { return PS4.gyro_y(); }
+    int16_t gyro_z() { return PS4.gyro_z(); }
+    int16_t accel_x() { return PS4.accel_x(); }
+    int16_t accel_y() { return PS4.accel_y(); }
+    int16_t accel_z() { return PS4.accel_z(); }
 
     namespace DATA
     {
-        SerialTransfer serialTransfer;
-        INPUT_STRUCT inputStruct;
-
-        void init()
-        {
-            Serial1.begin(115200);
-            serialTransfer.begin(Serial1);
-        }
-        bool receiveData()
-        {
-            if (serialTransfer.available())
-            {
-                serialTransfer.rxObj(inputStruct);
-                return true;
-            }
-            return false;
-        }
         int filterDeadzone(int _input, int _deadZone)
         {
             if (_input > _deadZone || _input < -_deadZone)
@@ -114,5 +94,72 @@ namespace PS4
             }
             return 0;
         }
+    }
+
+
+    bool inputsReady;
+    void updateInputs();
+    void removePairedDevices();
+    void batteryWarnCycleProc();
+    void attachEvents();
+
+    INPUT_STRUCT inputStruct;
+
+
+    bool init()
+    {
+        attachEvents();
+        bool output = PS4.begin();
+        removePairedDevices();
+        return output;
+    }
+
+    void attachEvents()
+    {
+        PS4.attach(updateInputs);
+        PS4.attachOnConnect(onConnect);
+        PS4.attachOnDisconnect(onDisconnect);
+    }
+
+    void removePairedDevices()
+    {
+        uint8_t pairedDeviceBtAddr[20][6];
+        int count = esp_bt_gap_get_bond_device_num();
+        esp_bt_gap_get_bond_device_list(&count, pairedDeviceBtAddr);
+        for (int i = 0; i < count; i++)
+        {
+            esp_bt_gap_remove_bond_device(pairedDeviceBtAddr[i]);
+        }
+    }
+
+    void printDeviceAddress()
+    {
+        const uint8_t *point = esp_bt_dev_get_address();
+        for (int i = 0; i < 6; i++)
+        {
+            char str[3];
+            sprintf(str, "%02x", (int)point[i]);
+            Serial.print(str);
+            if (i < 5)
+            {
+                Serial.print(":");
+            }
+        }
+    }
+
+    void onConnect()
+    {
+        digitalWrite(2, HIGH);
+        Serial.println("Connected!");
+    }
+
+    void onDisconnect()
+    {
+        digitalWrite(2, LOW);
+        Serial.println("Disconnected!");
+    }
+    void updateInputs()
+    {
+        inputsReady = true;
     }
 }
