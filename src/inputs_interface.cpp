@@ -44,24 +44,33 @@ namespace PS42
     /*    A N A L O G   */
     /********************/
 
+    int filterDeadzone(int _input, int _deadZone)
+    {
+        if (_input > _deadZone || _input < -_deadZone)
+        {
+            return _input;
+        }
+        return 0;
+    }
+
     int8_t LStickX()
     {
-        return DATA::filterDeadzone(PS4.LStickX(), DEADZONE);
+        return filterDeadzone(PS4.LStickX(), DEADZONE);
     }
 
     int8_t LStickY()
     {
-        return DATA::filterDeadzone(PS4.LStickY(), DEADZONE);
+        return filterDeadzone(PS4.LStickY(), DEADZONE);
     }
 
     int8_t RStickX()
     {
-        return DATA::filterDeadzone(PS4.RStickX(), DEADZONE);
+        return filterDeadzone(PS4.RStickX(), DEADZONE);
     }
 
     int8_t RStickY()
     {
-        return DATA::filterDeadzone(PS4.RStickY(), DEADZONE);
+        return filterDeadzone(PS4.RStickY(), DEADZONE);
     }
 
     /*******************************/
@@ -82,18 +91,6 @@ namespace PS42
     int16_t accel_x() { return PS4.accel_x(); }
     int16_t accel_y() { return PS4.accel_y(); }
     int16_t accel_z() { return PS4.accel_z(); }
-
-    namespace DATA
-    {
-        int filterDeadzone(int _input, int _deadZone)
-        {
-            if (_input > _deadZone || _input < -_deadZone)
-            {
-                return _input;
-            }
-            return 0;
-        }
-    }
 
     bool inputsReady;
     void updateInputs();
