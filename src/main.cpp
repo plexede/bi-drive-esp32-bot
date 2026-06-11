@@ -48,7 +48,12 @@ void loop()
         int x = inputs_interface::filterDeadzone(PS4.LStickX(), DEADZONE) * 2;
         int pivot = inputs_interface::filterDeadzone(PS4.RStickX(), DEADZONE) * 2;
 
-        leftMotor.setPower(leftMotor.clamp(y + x + pivot));
-        rightMotor.setPower(rightMotor.clamp(y - x + pivot));
+        int l_power = leftMotor.clamp(y + x - pivot);
+        int r_power = rightMotor.clamp(y - x + pivot);
+
+        leftMotor.setPower(l_power);
+        rightMotor.setPower(r_power);
+
+        Serial.println("L: " + String(l_power) + " R: " + String(r_power));
     }
 }

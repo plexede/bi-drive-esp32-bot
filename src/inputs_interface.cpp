@@ -5,7 +5,6 @@
 #include "esp_gap_bt_api.h"
 #include "esp_err.h"
 
-#define DEADZONE 4 // TODO: adjust this!
 namespace inputs_interface
 {
     int filterDeadzone(int _input, int _deadZone)
