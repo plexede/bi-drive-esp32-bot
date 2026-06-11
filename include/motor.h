@@ -17,6 +17,8 @@ public:
     void begin();
     // set motor power from -255 to 255. Make sure you map your inputs!
     void setPower(int targetPower);
+    // helper to clamp values between -255 and 255
+    int clamp(int value);
     // manually set pwm pin from 0 to 255 and dir pin as a boolean
     void setPins(uint8_t pwm, bool dir);
     // set-and-forget motor inversion, will apply to every function EXCEPT setPins

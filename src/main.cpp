@@ -4,6 +4,8 @@
 
 #include <motor.h>
 
+const int DEADZONE = 4; // TODO: adjust this!
+
 MOTOR leftMotor(34, 35);
 MOTOR rightMotor(32, 33);
 
@@ -42,11 +44,11 @@ void loop()
         digitalWrite(2, PS4.PSButton() ? HIGH : LOW);
 
         // Simple tank drive logic
-        int y = inputs_interface::filterDeadzone(PS4.LStickY(), 4) * 2;
-        int x = inputs_interface::filterDeadzone(PS4.LStickX(), 4) * 2;
-        int pivot = inputs_interface::filterDeadzone(PS4.RStickX(), 4) * 2;
+        int y = inputs_interface::filterDeadzone(PS4.LStickY(), DEADZONE) * 2;
+        int x = inputs_interface::filterDeadzone(PS4.LStickX(), DEADZONE) * 2;
+        int pivot = inputs_interface::filterDeadzone(PS4.RStickX(), DEADZONE) * 2;
 
-        leftMotor.setPower(y + x + pivot);
-        rightMotor.setPower(y - x + pivot);
+        leftMotor.setPower(leftMotor.clamp(y + x + pivot));
+        rightMotor.setPower(rightMotor.clamp(y - x + pivot));
     }
 }

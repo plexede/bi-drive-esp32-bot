@@ -26,12 +26,13 @@ void MOTOR::setPower(int _targetPower)
     power *= invertMultiplier;
     bool direction = power > 0;
     uint8_t pwmPower = map(abs(power), 0, MAX_SPEED, 0, 255);
-    if (abs(_targetPower) > MAX_SPEED)
-    {
-        Serial.println("Motor power rollover. Did you mean to do that?");
-    }
 
     analogWrite(pwm, pwmPower);
     digitalWrite(dir, direction);
+}
+
+int MOTOR::clamp(int value)
+{
+    return constrain(value, -MAX_SPEED, MAX_SPEED);
 }
 
