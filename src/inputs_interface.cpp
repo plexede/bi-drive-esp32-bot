@@ -67,7 +67,6 @@ namespace PS42
     /*******************************/
     /*   S T A T U S   F L A G S   */
     /*******************************/
-
     uint8_t battery() { return PS4.battery(); }
     bool isCharging() { return PS4.charging(); }
     bool hasAudio() { return PS4.audio(); }
@@ -96,7 +95,6 @@ namespace PS42
         }
     }
 
-
     bool inputsReady;
     void updateInputs();
     void removePairedDevices();
@@ -104,7 +102,6 @@ namespace PS42
     void attachEvents();
 
     INPUT_STRUCT inputStruct;
-
 
     bool init()
     {
