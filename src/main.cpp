@@ -14,7 +14,7 @@ void setup()
     pinMode(2, OUTPUT); // builtin led
     Serial.begin(115200);
     Serial.println("boot");
-
+    inputs_interface::printDeviceAddress();
     bool isInit_BT;
     isInit_BT = inputs_interface::init();
 
