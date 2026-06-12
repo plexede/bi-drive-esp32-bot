@@ -8,7 +8,7 @@ Made partly with AI! (this is a feat as I find it hard to tolerate)
 ## Setup
 
 1. Ensure you have [PlatformIO](https://platformio.org/) installed.
-2. Use the [SixaxisPairTool](https://github.com/user-contributions/SixaxisPairTool) to set the ESP32's Bluetooth MAC address on your PS4 controller so it can connect automatically.
+2. Use the SixaxisPairTool to set the ESP32's Bluetooth MAC address on your PS4 controller so it can connect automatically.
 3. Connect your ESP32.
 4. Build and upload using the PlatformIO UI in VSCode or by running the following command in your terminal:
 
